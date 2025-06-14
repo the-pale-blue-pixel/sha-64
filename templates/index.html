@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contraseña ASCII</title>
+  <link rel="stylesheet" href="/static/css/estilo.css">
+</head>
+<body>
+  <div class="container" id="form-container">
+    <img src="/static/images/img1.png" alt="Pantalla de entrada de contraseña ASCII" class="background-image" />
+    
+    <form id="password-form" onsubmit="event.preventDefault(); submitForm();">
+      <input type="password" id="password" required class="form-input" />
+      </form>
+  </div>
+
+  <div class="container" id="result-container" style="display:none;">
+    <img src="/static/images/img2.png" alt="Mensaje de galleta" class="background-image" />
+  </div>
+
+  <script>
+    function submitForm() {
+      const passwordInput = document.getElementById("password");
+      const password = passwordInput.value;
+      if (password.trim() === "") return;
+
+      fetch("/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("form-container").style.display = "none";
+        document.getElementById("result-container").style.display = "block";
+        
+        setTimeout(() => {
+          document.getElementById("result-container").style.display = "none";
+          document.getElementById("form-container").style.display = "block";
+          passwordInput.value = ""; // Limpia el input
+          passwordInput.focus(); // Vuelve a poner el foco en el input para que el usuario pueda escribir de nuevo
+        }, 10000); 
+      })
+      .catch(error => { 
+          console.error('Error en la solicitud:', error);
+          alert('Hubo un error al generar la galleta. Revisa la consola para más detalles.'); 
+          // Si hay un error, volvemos al formulario inicial
+          document.getElementById("form-container").style.display = "block";
+          document.getElementById("result-container").style.display = "none";
+          passwordInput.focus();
+      });
+    }
+
+    window.onload = function() {
+        const passwordInput = document.getElementById('password');
+        
+        // ¡¡¡CRÍTICO!!! AJUSTA ESTOS VALORES PARA img1.png
+        // Abre tu navegador, F12, selecciona el input,
+        // y ajusta 'top', 'left', 'width', 'height' en el inspector de estilos
+        // hasta que encaje perfectamente en el recuadro de la imagen.
+        // Los porcentajes son relativos al tamaño de la imagen/contenedor.
+
+        // Valores de EJEMPLO. Deben ser ajustados manualmente para tu img1.png
+        const inputTop = '55%'; // Mueve arriba/abajo el centro del input
+        const inputLeft = '50%'; // Mueve izquierda/derecha el centro del input
+        const inputWidth = '200px'; // Ancho del campo
+        const inputHeight = '28px'; // Alto del campo
+        
+        // Aplicar estilos directamente
+        passwordInput.style.position = 'absolute';
+        passwordInput.style.top = inputTop;
+        passwordInput.style.left = inputLeft;
+        passwordInput.style.width = inputWidth;
+        passwordInput.style.height = inputHeight;
+        passwordInput.style.transform = 'translate(-50%, -50%)'; // Centra el input relativo a su top/left
+
+        passwordInput.focus(); // Pone el cursor parpadeando al cargar la página
+    };
+
+    // El evento 'keypress' ahora solo maneja el Enter, ya no hay botón de flecha
+    document.getElementById('password').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault(); 
+            submitForm();
+        }
+    });
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #030507; /* Nuevo color de fondo general */
+  color: white; /* Color del texto general (si hay) */
+  font-family: sans-serif; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  height: 100vh; 
+  overflow: hidden; 
+}
+
+.container {
+  text-align: center;
+  width: 90%; 
+  max-width: 500px; 
+  padding: 0; 
+  box-sizing: border-box;
+  position: relative; 
+}
+
+.background-image {
+  max-width: 100%; 
+  height: auto; 
+  display: block; 
+  margin: 20px auto 0 auto; /* 20px arriba, auto para centrar horizontalmente, 0 abajo, auto izquierda */
+  margin-right: 20px; /* Margen a la derecha */
+}
+
+/* Estilos para el input de contraseña */
+.form-input {
+  background-color: rgba(0, 0, 0, 0.5); 
+  border: 1px solid #0f0; 
+  color: white;
+  font-size: 1.2em;
+  padding: 5px 8px; 
+  
+  position: absolute; 
+  /* top, left, width, height, transform se definirán en JavaScript */
+  
+  caret-color: #0f0; 
+  outline: none; 
+  font-family: 'Courier New', Courier, monospace; 
+}
+
+/* El .submit-arrow ya no existe, por lo que este bloque CSS se puede eliminar */
+/* .submit-arrow {
+  font-size: 2em; 
+  cursor: pointer;
+  color: white;
+  background: none; 
+  border: none; 
+  padding: 0;
+  
+  position: absolute; 
+} */
+
+/* Eliminar estilos de elementos antiguos que ya no se usan */
+p#new-password-msg, #generated-img {
+    display: none; 
+}
