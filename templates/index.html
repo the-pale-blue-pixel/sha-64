@@ -7,23 +7,41 @@
   <link rel="stylesheet" href="/static/css/estilo.css">
 </head>
 <body>
-  <div class="container" id="form-container">
-    <img src="/static/images/img1.png" alt="Pantalla de entrada de contraseña ASCII" class="background-image" />
+  <!-- Este es el contenedor PRINCIPAL al que se aplica la reducción de tamaño (85%) -->
+  <div class="scaled-content-wrapper"> 
     
-    <form id="password-form" onsubmit="event.preventDefault(); submitForm();">
-      <input type="password" id="password" required class="form-input" />
+    <!-- Primera "ventana": img1.png con el formulario superpuesto -->
+    <div class="container" id="form-container">
+      <img src="/static/images/img1.png" alt="Pantalla de entrada de contraseña ASCII" class="background-image" />
+      
+      <form id="password-form" onsubmit="event.preventDefault(); submitForm();">
+        <input type="password" id="password" required class="form-input" />
       </form>
-  </div>
+    </div>
 
-  <div class="container" id="result-container" style="display:none;">
-    <img src="/static/images/img2.png" alt="Mensaje de galleta" class="background-image" />
-  </div>
+    <!-- Segunda "ventana": img2.png estática -->
+    <div class="container" id="result-container" style="display:none;">
+      <img src="/static/images/img2.png" alt="Mensaje de galleta" class="background-image" />
+    </div>
 
+  </div> <!-- Cierre del scaled-content-wrapper -->
+  
   <script>
+    // Variables de duración para las transiciones
+    const TRANSITION_DURATION = 1000; // 2 segundos para la transición de entrada/salida
+    const DISPLAY_DURATION = 5000; // 10 segundos para mostrar la pantalla de resultado
+
     function submitForm() {
       const passwordInput = document.getElementById("password");
       const password = passwordInput.value;
       if (password.trim() === "") return;
+
+      const formContainer = document.getElementById("form-container");
+      const resultContainer = document.getElementById("result-container");
+
+      // Iniciar la animación de salida de la pantalla actual
+      formContainer.style.opacity = '0';
+      formContainer.style.filter = 'blur(10px)'; 
 
       fetch("/generate", {
         method: "POST",
@@ -32,22 +50,44 @@
       })
       .then(res => res.json())
       .then(data => {
-        document.getElementById("form-container").style.display = "none";
-        document.getElementById("result-container").style.display = "block";
-        
+        // Después de que termine la animación de salida (TRANSITION_DURATION)
         setTimeout(() => {
-          document.getElementById("result-container").style.display = "none";
-          document.getElementById("form-container").style.display = "block";
-          passwordInput.value = ""; // Limpia el input
-          passwordInput.focus(); // Vuelve a poner el foco en el input para que el usuario pueda escribir de nuevo
-        }, 10000); 
+          formContainer.style.display = 'none'; // Ocultar completamente la primera pantalla
+          
+          resultContainer.style.display = 'block'; // Mostrar la segunda pantalla
+          // Forzar un reflow para asegurar que display:block se aplique antes de la transición
+          resultContainer.offsetHeight; 
+          
+          resultContainer.style.opacity = '1'; // Mostrar con animación de entrada
+          resultContainer.style.filter = 'blur(0px)'; 
+
+          // Temporizador para volver a la primera pantalla
+          setTimeout(() => {
+            resultContainer.style.opacity = '0'; // Desvanecer y difuminar al salir la segunda pantalla
+            resultContainer.style.filter = 'blur(10px)';
+
+            setTimeout(() => {
+              resultContainer.style.display = 'none'; // Ocultar completamente la segunda pantalla
+              formContainer.style.display = 'block'; // Mostrar la primera pantalla
+              // Forzar un reflow
+              formContainer.offsetHeight; 
+
+              formContainer.style.opacity = '1'; // Mostrar con animación de entrada
+              formContainer.style.filter = 'blur(0px)'; 
+              passwordInput.value = ""; // Limpia el input
+              passwordInput.focus(); // Vuelve a poner el foco
+            }, TRANSITION_DURATION); // Duración de la animación de regreso
+          }, DISPLAY_DURATION); // Duración que se muestra la segunda pantalla
+        }, TRANSITION_DURATION); // Duración de la animación de salida inicial
       })
       .catch(error => { 
           console.error('Error en la solicitud:', error);
           alert('Hubo un error al generar la galleta. Revisa la consola para más detalles.'); 
-          // Si hay un error, volvemos al formulario inicial
-          document.getElementById("form-container").style.display = "block";
-          document.getElementById("result-container").style.display = "none";
+          // Si hay un error, resetea la pantalla para que el usuario pueda intentar de nuevo
+          formContainer.style.display = 'block';
+          formContainer.style.opacity = '1';
+          formContainer.style.filter = 'blur(0px)';
+          resultContainer.style.display = 'none';
           passwordInput.focus();
       });
     }
@@ -55,17 +95,12 @@
     window.onload = function() {
         const passwordInput = document.getElementById('password');
         
-        // ¡¡¡CRÍTICO!!! AJUSTA ESTOS VALORES PARA img1.png
-        // Abre tu navegador, F12, selecciona el input,
-        // y ajusta 'top', 'left', 'width', 'height' en el inspector de estilos
-        // hasta que encaje perfectamente en el recuadro de la imagen.
-        // Los porcentajes son relativos al tamaño de la imagen/contenedor.
 
         // Valores de EJEMPLO. Deben ser ajustados manualmente para tu img1.png
-        const inputTop = '55%'; // Mueve arriba/abajo el centro del input
-        const inputLeft = '50%'; // Mueve izquierda/derecha el centro del input
-        const inputWidth = '200px'; // Ancho del campo
-        const inputHeight = '28px'; // Alto del campo
+        const inputTop = '55%'; 
+        const inputLeft = '50%'; 
+        const inputWidth = '200px'; 
+        const inputHeight = '28px'; 
         
         // Aplicar estilos directamente
         passwordInput.style.position = 'absolute';
@@ -73,12 +108,12 @@
         passwordInput.style.left = inputLeft;
         passwordInput.style.width = inputWidth;
         passwordInput.style.height = inputHeight;
-        passwordInput.style.transform = 'translate(-50%, -50%)'; // Centra el input relativo a su top/left
+        passwordInput.style.transform = 'translate(-50%, -50%)'; 
 
-        passwordInput.focus(); // Pone el cursor parpadeando al cargar la página
+        passwordInput.focus(); 
     };
 
-    // El evento 'keypress' ahora solo maneja el Enter, ya no hay botón de flecha
+    // El evento 'keypress' ahora solo maneja el Enter
     document.getElementById('password').addEventListener('keypress', function(event) {
         if (event.key === 'Enter') {
             event.preventDefault(); 
