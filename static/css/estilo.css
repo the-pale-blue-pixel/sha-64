@@ -1,20 +1,36 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #030507; /* Nuevo color de fondo general */
-  color: white; /* Color del texto general (si hay) */
+  background-color: #030507; 
+  color: white; 
   font-family: sans-serif; 
-  display: flex; 
-  justify-content: center; 
-  align-items: center; 
+  display: flex; /* Flexbox para centrar el contenido */
+  justify-content: center; /* Centrar horizontalmente */
+  align-items: center; /* Centrar verticalmente */
   height: 100vh; 
   overflow: hidden; 
 }
 
+/* Nuevo contenedor para aplicar la escala a todo */
+.scaled-content-wrapper {
+    /* Reduce el tamaño de todo el contenido dentro al 85% */
+    transform: scale(0.85); 
+    /* Mantiene el centro de la transformación en el centro del elemento */
+    transform-origin: center center; 
+    /* Asegura que el contenido escalado esté centrado en el flexbox del body */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Evita que el escalado lo saque del flujo, útil si hay más elementos */
+    width: fit-content; 
+    height: fit-content;
+}
+
+
 .container {
   text-align: center;
-  width: 90%; 
-  max-width: 500px; 
+  width: 90%; /* Ancho del contenedor */
+  max-width: 500px; /* Ancho máximo para el arte ASCII */
   padding: 0; 
   box-sizing: border-box;
   position: relative; 
@@ -43,18 +59,6 @@ body {
   outline: none; 
   font-family: 'Courier New', Courier, monospace; 
 }
-
-/* El .submit-arrow ya no existe, por lo que este bloque CSS se puede eliminar */
-/* .submit-arrow {
-  font-size: 2em; 
-  cursor: pointer;
-  color: white;
-  background: none; 
-  border: none; 
-  padding: 0;
-  
-  position: absolute; 
-} */
 
 /* Eliminar estilos de elementos antiguos que ya no se usan */
 p#new-password-msg, #generated-img {
