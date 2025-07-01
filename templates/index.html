@@ -7,29 +7,22 @@
   <link rel="stylesheet" href="/static/css/estilo.css">
 </head>
 <body>
-  <!-- Este es el contenedor PRINCIPAL al que se aplica la reducción de tamaño (85%) -->
   <div class="scaled-content-wrapper"> 
-    
-    <!-- Primera "ventana": img1.png con el formulario superpuesto -->
     <div class="container" id="form-container">
       <img src="/static/images/img1.png" alt="Pantalla de entrada de contraseña ASCII" class="background-image" />
-      
       <form id="password-form" onsubmit="event.preventDefault(); submitForm();">
         <input type="password" id="password" required class="form-input" />
       </form>
     </div>
 
-    <!-- Segunda "ventana": img2.png estática -->
     <div class="container" id="result-container" style="display:none;">
       <img src="/static/images/img2.png" alt="Mensaje de galleta" class="background-image" />
     </div>
+  </div>
 
-  </div> <!-- Cierre del scaled-content-wrapper -->
-  
   <script>
-    // Variables de duración para las transiciones
-    const TRANSITION_DURATION = 500; // 2 segundos para la transición de entrada/salida
-    const DISPLAY_DURATION = 5000; // 10 segundos para mostrar la pantalla de resultado
+    const TRANSITION_DURATION = 1000;
+    const DISPLAY_DURATION = 5000;
 
     function submitForm() {
       const passwordInput = document.getElementById("password");
@@ -39,7 +32,6 @@
       const formContainer = document.getElementById("form-container");
       const resultContainer = document.getElementById("result-container");
 
-      // Iniciar la animación de salida de la pantalla actual
       formContainer.style.opacity = '0';
       formContainer.style.filter = 'blur(10px)'; 
 
@@ -50,77 +42,57 @@
       })
       .then(res => res.json())
       .then(data => {
-        // Después de que termine la animación de salida (TRANSITION_DURATION)
         setTimeout(() => {
-          formContainer.style.display = 'none'; // Ocultar completamente la primera pantalla
-          
-          resultContainer.style.display = 'block'; // Mostrar la segunda pantalla
-          // Forzar un reflow para asegurar que display:block se aplique antes de la transición
-          resultContainer.offsetHeight; 
-          
-          resultContainer.style.opacity = '1'; // Mostrar con animación de entrada
-          resultContainer.style.filter = 'blur(0px)'; 
+          formContainer.style.display = 'none';
+          resultContainer.style.display = 'block';
+          resultContainer.offsetHeight;
+          resultContainer.style.opacity = '1';
+          resultContainer.style.filter = 'blur(0px)';
 
-          // Temporizador para volver a la primera pantalla
           setTimeout(() => {
-            resultContainer.style.opacity = '0'; // Desvanecer y difuminar al salir la segunda pantalla
+            window.open(data.image_url, "_blank");
+            resultContainer.style.opacity = '0';
             resultContainer.style.filter = 'blur(10px)';
-
             setTimeout(() => {
-              resultContainer.style.display = 'none'; // Ocultar completamente la segunda pantalla
-              formContainer.style.display = 'block'; // Mostrar la primera pantalla
-              // Forzar un reflow
-              formContainer.offsetHeight; 
-
-              formContainer.style.opacity = '1'; // Mostrar con animación de entrada
-              formContainer.style.filter = 'blur(0px)'; 
-              passwordInput.value = ""; // Limpia el input
-              passwordInput.focus(); // Vuelve a poner el foco
-            }, TRANSITION_DURATION); // Duración de la animación de regreso
-          }, DISPLAY_DURATION); // Duración que se muestra la segunda pantalla
-        }, TRANSITION_DURATION); // Duración de la animación de salida inicial
+              resultContainer.style.display = 'none';
+              formContainer.style.display = 'block';
+              formContainer.offsetHeight;
+              formContainer.style.opacity = '1';
+              formContainer.style.filter = 'blur(0px)';
+              passwordInput.value = "";
+              passwordInput.focus();
+            }, TRANSITION_DURATION);
+          }, DISPLAY_DURATION);
+        }, TRANSITION_DURATION);
       })
-      .catch(error => { 
-          console.error('Error en la solicitud:', error);
-          alert('Hubo un error al generar la galleta. Revisa la consola para más detalles.'); 
-          // Si hay un error, resetea la pantalla para que el usuario pueda intentar de nuevo
-          formContainer.style.display = 'block';
-          formContainer.style.opacity = '1';
-          formContainer.style.filter = 'blur(0px)';
-          resultContainer.style.display = 'none';
-          passwordInput.focus();
+      .catch(error => {
+        console.error('Error en la solicitud:', error);
+        alert('Error al generar la imagen.');
+        formContainer.style.display = 'block';
+        formContainer.style.opacity = '1';
+        formContainer.style.filter = 'blur(0px)';
+        resultContainer.style.display = 'none';
+        passwordInput.focus();
       });
     }
 
     window.onload = function() {
-        const passwordInput = document.getElementById('password');
-        
-
-        // Valores de EJEMPLO. Deben ser ajustados manualmente para tu img1.png
-        const inputTop = '55%'; 
-        const inputLeft = '50%'; 
-        const inputWidth = '200px'; 
-        const inputHeight = '28px'; 
-        
-        // Aplicar estilos directamente
-        passwordInput.style.position = 'absolute';
-        passwordInput.style.top = inputTop;
-        passwordInput.style.left = inputLeft;
-        passwordInput.style.width = inputWidth;
-        passwordInput.style.height = inputHeight;
-        passwordInput.style.transform = 'translate(-50%, -50%)'; 
-
-        passwordInput.focus(); 
+      const input = document.getElementById('password');
+      input.style.top = '55%';
+      input.style.left = '50%';
+      input.style.width = '200px';
+      input.style.height = '28px';
+      input.style.transform = 'translate(-50%, -50%)'; 
+      input.focus(); 
     };
 
-    // El evento 'keypress' ahora solo maneja el Enter
     document.getElementById('password').addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            event.preventDefault(); 
-            submitForm();
-        }
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        submitForm();
+      }
     });
-
   </script>
 </body>
 </html>
+
