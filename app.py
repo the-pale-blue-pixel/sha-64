@@ -1,21 +1,36 @@
 import os
 import threading
+import requests
 from flask import Flask, request, jsonify, render_template, send_file
 from PIL import Image, ImageDraw, ImageFont
+from datetime import datetime
 
 app = Flask(__name__)
 
 STATIC_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
 GENERATED_IMAGE_PATH = os.path.join(STATIC_FOLDER, 'generated', 'image.png')
-FONT_PATH = os.path.join(STATIC_FOLDER, 'fonts', 'AtariST8x16SystemFont.ttf')
+FONT_PATH = os.path.join(STATIC_FOLDER, 'fonts', 'Pixel Operator Mono 8 Regular_23949.ttf')
 
 image_generation_lock = threading.Lock()
 
-def crear_imagen(password_texto):
-    from PIL import Image, ImageDraw, ImageFont
-    from datetime import datetime
-    import os
+# PONER ACÁ LA DIRECCIÓN DE AFIRME !!!!! 
+IMPRESORA_ENDPOINT = "http://192.168.1.100:5000/print_image"
 
+def enviar_a_impresora(image_path):
+    """Envía la imagen al endpoint remoto de la impresora."""
+    try:
+        with open(image_path, 'rb') as img_file:
+            files = {'file': ('image.png', img_file, 'image/png')}
+            response = requests.post(IMPRESORA_ENDPOINT, files=files)
+        if response.status_code == 200:
+            print("✅ Imagen enviada a la impresora con éxito.")
+        else:
+            print(f"❌ Error al enviar a impresora. Código: {response.status_code}")
+    except Exception as e:
+        print("❌ Excepción al enviar a impresora:", e)
+
+def crear_imagen(password_texto):
+    """Genera una imagen con los datos y guarda en disco."""
     try:
         font_large = ImageFont.truetype(FONT_PATH, 25)
         font = ImageFont.truetype(FONT_PATH, 14)
@@ -28,7 +43,6 @@ def crear_imagen(password_texto):
     line_spacing = 8
     y = 20
 
-    # Preparamos líneas de texto a mostrar
     lines = [
         ("*" * 53, font_small, "center"),
         (password_texto, font_large, "center"),
@@ -36,7 +50,6 @@ def crear_imagen(password_texto):
         ("", None, "spacer"),
         ("type: transaction", font, "center"),
         ("", None, "divider"),
-        # Pares en la misma línea
         (("id:", "xxxxxxxxx"), font, "row"),
         (("entrypoint:", "mint"), font, "row"),
         (("status:", "applied"), font, "row"),
@@ -51,15 +64,11 @@ def crear_imagen(password_texto):
         (' '.join(['xxxxxxxxx'] * 4), font_small, "center"),
     ]
 
-    # Calcular alto necesario
     def calc_height():
         total = y
         for text, f, kind in lines:
-            if kind == "divider" or kind == "spacer":
+            if kind in ["divider", "spacer"]:
                 total += 10
-            elif kind == "row":
-                h = f.getbbox("Ag")[3] if f else 20
-                total += h + line_spacing
             else:
                 h = f.getbbox("Ag")[3] if f else 20
                 total += h + line_spacing
@@ -77,7 +86,6 @@ def crear_imagen(password_texto):
             draw.line([(20, y), (img_width - 20, y)], fill="black", width=1)
             y += 10
             continue
-
         if align == "row":
             left_text, right_text = text
             left_w = draw.textlength(left_text, font=f)
@@ -98,11 +106,9 @@ def crear_imagen(password_texto):
             x = (img_width - w) / 2
         else:
             x = 0
-
         draw.text((x, y), text, fill="black", font=f)
         y += f.getbbox("Ag")[3] + line_spacing if f else 20
 
-    # Guardar imagen
     os.makedirs(os.path.dirname(GENERATED_IMAGE_PATH), exist_ok=True)
     try:
         img.save(GENERATED_IMAGE_PATH)
@@ -122,6 +128,8 @@ def generate():
     def process():
         with image_generation_lock:
             crear_imagen(password)
+        # 👇 Enviar en un hilo separado para no bloquear la respuesta
+        threading.Thread(target=enviar_a_impresora, args=(GENERATED_IMAGE_PATH,)).start()
 
     process()
     return jsonify({ "image_url": "/print" })
